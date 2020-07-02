@@ -1,6 +1,10 @@
 package com.etiantian.online.package_channels;
 
+import android.content.Context;
+
 import androidx.annotation.NonNull;
+
+import com.mcxiaoke.packer.helper.PackerNg;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.MethodCall;
@@ -17,10 +21,15 @@ public class PackageChannelsPlugin implements FlutterPlugin, MethodCallHandler {
   /// when the Flutter Engine is detached from the Activity
   private MethodChannel channel;
 
+  static Context contextR;
+  Context contextO;
+
+
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
     channel = new MethodChannel(flutterPluginBinding.getFlutterEngine().getDartExecutor(), "package_channels");
     channel.setMethodCallHandler(this);
+    contextO = flutterPluginBinding.getApplicationContext();
   }
 
   // This static function is optional and equivalent to onAttachedToEngine. It supports the old
@@ -35,12 +44,22 @@ public class PackageChannelsPlugin implements FlutterPlugin, MethodCallHandler {
   public static void registerWith(Registrar registrar) {
     final MethodChannel channel = new MethodChannel(registrar.messenger(), "package_channels");
     channel.setMethodCallHandler(new PackageChannelsPlugin());
+    contextR = registrar.activeContext();
   }
 
   @Override
   public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
     if (call.method.equals("getPlatformVersion")) {
       result.success("Android " + android.os.Build.VERSION.RELEASE);
+    } else if (call.method.equals("getChannel")) {
+      if (contextR != null) {
+        result.success(PackerNg.getChannel(contextR));
+      }
+
+      if (contextO != null) {
+        result.success(PackerNg.getChannel(contextO));
+      }
+
     } else {
       result.notImplemented();
     }
